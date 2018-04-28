@@ -1,0 +1,14 @@
+nav {
+    display: flex;
+    justify-content: space-between;
+    padding: 0 50px;
+}
+
+a {
+    text-decoration: none;
+    color: black;
+}
+
+nav a:nth-child(1) {
+    pointer-events: none;
+}
