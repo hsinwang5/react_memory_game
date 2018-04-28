@@ -6,27 +6,14 @@ import RenderBoxes from "./RenderBoxes"
 class App extends Component {
   constructor(props) {
     super(props);
-    const randomizedArray = createRandomizedArray();
+    const randomizedArray = createRandomizedArray(props.colors.slice());
     this.state = {
-      initialArray: ["gray","gray","gray","gray","gray","gray","gray","gray",
+      gameArray: ["gray","gray","gray","gray","gray","gray","gray","gray",
       "gray","gray","gray","gray","gray","gray","gray","gray",],
       randomizedArray,
       checkSolution: [],
-      prevIndex: 0,
+      prevIndex: -1,
       pointerEvents: "auto"
-    }
-
-    function randomInt(max) {
-      return Math.floor(Math.random() * max);
-    }
-    function createRandomizedArray() {
-      const randomizedArray = [];
-      const colorArr = props.colors.slice();
-      const colorlength = colorArr.length;
-      for (let i=0; i<colorlength; i++) {
-        randomizedArray.push(colorArr.splice(randomInt(colorArr.length), 1)[0]);
-      }
-      return randomizedArray;
     }
 
     this.handleFlip = this.handleFlip.bind(this);
@@ -35,12 +22,18 @@ class App extends Component {
   }
 
   handleFlip(cardID) {
-    const newArr = this.state.initialArray.slice();
+    const newArr = this.state.gameArray.slice();
+    if (newArr[cardID] !== "gray") {
+      return;
+    }
     newArr[cardID] = this.state.randomizedArray[cardID];
     const solution = newArr[cardID];
     let checkSolution = this.state.checkSolution;
     let prevIndex = this.state.prevIndex;
     checkSolution.push(solution);
+    if (cardID === prevIndex) {
+      return;
+    }
     if (checkSolution.length === 2) {
       this.setState({pointerEvents: "none"});
       setTimeout(() => {
@@ -50,7 +43,7 @@ class App extends Component {
       prevIndex = cardID;
     }
     this.setState((prevState, props) => ({
-      initialArray: newArr,
+      gameArray: newArr,
       checkSolution,
       prevIndex
     }));
@@ -67,20 +60,21 @@ class App extends Component {
       checkSolution = [];
     }
     this.setState((prevState, props) => ({
-      initialArray: newArr,
+      gameArray: newArr,
       checkSolution,
-      prevIndex,
+      prevIndex: -1,
       pointerEvents: "auto"
     }));
   }
 
-  startNewGame() {
-    const randomizedArray = this.createRandomizedArray; 
-    const initialArray = ["gray","gray","gray","gray","gray","gray","gray","gray",
+  startNewGame(e) {
+    e.preventDefault();
+    const randomizedArray = createRandomizedArray(this.props.colors.slice()); 
+    const gameArray = ["gray","gray","gray","gray","gray","gray","gray","gray",
     "gray","gray","gray","gray","gray","gray","gray","gray",]
     this.setState({
       randomizedArray,
-      initialArray,
+      gameArray,
       checkSolution: [],
       prevIndex: 0,
       pointerEvents: "auto"
@@ -92,7 +86,7 @@ class App extends Component {
       <div className="App">
         <NavBar title="Memory Game" newGame={this.startNewGame} />
         <RenderBoxes 
-          colorArr={this.state.initialArray} 
+          colorArr={this.state.gameArray} 
           flipCard={this.handleFlip}
           pointerEvents={this.state.pointerEvents} 
         />
@@ -104,7 +98,19 @@ class App extends Component {
 App.defaultProps = {
   colors: ["red", "blue", "green", "yellow", "orange", "purple", "black", "pink",
   "red", "blue", "green", "yellow", "orange", "purple", "black", "pink"],
-  boxColor: "gray"
+}
+
+function createRandomizedArray(colorArr) {
+  const randomizedArray = [];
+  // const colorArr = props.colors.slice();
+  const colorlength = colorArr.length;
+  for (let i=0; i<colorlength; i++) {
+    randomizedArray.push(colorArr.splice(randomInt(colorArr.length), 1)[0]);
+  }
+  return randomizedArray;
+}
+function randomInt(max) {
+  return Math.floor(Math.random() * max);
 }
 
 export default App;
